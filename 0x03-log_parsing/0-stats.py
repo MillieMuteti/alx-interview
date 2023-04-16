@@ -1,54 +1,37 @@
 #!/usr/bin/python3
+'''script reading stdin line by line and computing metrics'''
+
 
 import sys
 
-
-def print_msg(dict_sc, total_file_size):
-    """
-    Method to print
-    Args:
-        dict_sc: dict of status codes
-        total_file_size: total of the file
-    Returns:
-        Nothing
-    """
-
-    print("File size: {}".format(total_file_size))
-    for key, val in sorted(dict_sc.items()):
-        if val != 0:
-            print("{}: {}".format(key, val))
-
-
-total_file_size = 0
-code = 0
-counter = 0
-dict_sc = {"200": 0,
-           "301": 0,
-           "400": 0,
-           "401": 0,
-           "403": 0,
-           "404": 0,
-           "405": 0,
-           "500": 0}
+status = {'200': 0, '301': 0, '400': 0, '401': 0,
+         '403': 0, '404': 0, '405': 0, '500': 0}
+summation = 0
+tmp = 0
 
 try:
     for line in sys.stdin:
-        parsed_line = line.split()  # ✄ trimming
-        parsed_line = parsed_line[::-1]  # inverting
+        line_list = line.split(" ")
+        if len(line_list) > 4:
+            code = line_list[-2]
+            size = int(line_list[-1])
+            if code in status.keys():
+                status[code] += 1
+            summation += size
+            tmp += 1
 
-        if len(parsed_line) > 2:
-            counter += 1
+        if tmp == 10:
+            tmp = 0
+            print('File size: {}'.format(summation))
+            for key, value in sorted(status.items()):
+                if value != 0:
+                    print('{}: {}'.format(key, value))
 
-            if counter <= 10:
-                total_file_size += int(parsed_line[0])  # file size
-                code = parsed_line[1]  # status code
-
-                if (code in dict_sc.keys()):
-                    dict_sc[code] += 1
-
-            if (counter == 10):
-                print_msg(dict_sc, total_file_size)
-                counter = 0
+except Exception as err:
+    pass
 
 finally:
-    print_msg(dict_sc, total_file_size)
+    print('File size: {}'.format(summation))
+    for key, value in sorted(status.items()):
+        if value != 0:
+            print('{}: {}'.format(key, value))
